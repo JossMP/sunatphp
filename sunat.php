@@ -1,4 +1,5 @@
 <?php
+	include("curl.php");
 	class Sunat{
 		var $cc;  //Class cUrl
 		var $path;
@@ -16,6 +17,7 @@
 			$numRand = $this->cc->post($url,$data);
 			return $numRand;
 		}
+		
 		function BuscaDatosSunat($ruc)
 		{
 			$captcha = $this->ProcesaNumRand();
@@ -66,4 +68,7 @@
 			return $rtn;
 		}
 	}
+	
+	$test = new Sunat();
+	echo json_encode( $test->BuscaDatosSunat("10442747950"), JSON_PRETTY_PRINT );
 ?>
