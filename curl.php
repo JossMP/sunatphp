@@ -27,7 +27,6 @@
 			$this->headers[] = "Content-Type: application/x-www-form-urlencoded";
 			$this->headers[] = "DNT: 1";
 			$this->headers[] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-			//$this->headers[] = "Referer: http://clientes.reniec.gob.pe/padronElectoral2012/padronPEMDistrito.htm";
 			$this->headers[] = "X-Requested-With: XMLHttpRequest";
 			$this->headers[] = "Connection: keep-alive";
 
@@ -130,7 +129,7 @@
 			return false;
 		}
 		
-		function referer($url = "https://cel.reniec.gob.pe/valreg/valreg.do")
+		function referer($url = "https://www,google.com")
 		{
 			$this->referer=$url;
 		}
