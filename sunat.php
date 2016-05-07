@@ -1,5 +1,4 @@
 <?php
-	include("curl.php");
 	class Sunat{
 		var $cc;  //Class cUrl
 		var $path;
@@ -68,7 +67,4 @@
 			return $rtn;
 		}
 	}
-	
-	$test = new Sunat();
-	echo json_encode( $test->BuscaDatosSunat("10442747950"), JSON_PRETTY_PRINT );
 ?>
