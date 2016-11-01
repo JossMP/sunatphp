@@ -7,7 +7,7 @@ Clase php para consultar los datos de la web de [Sunat Perú]
     require ("sunat.php");
     $cliente = new Sunat();
     $ruc="10442747950";
-    echo json_encode( $client->BuscaDatosSunat($ruc), JSON_PRETTY_PRINT );
+    echo json_encode( $cliente->BuscaDatosSunat($ruc), JSON_PRETTY_PRINT );
 ?>
 ```
 [Sunat Perú]: <http://www.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias>
