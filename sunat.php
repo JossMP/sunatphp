@@ -53,7 +53,6 @@
 					"EmisionElectronica" 	=> "Emisor electr&oacute;nico desde",
 					"PLE" 					=> "Afiliado al PLE desde"
 				);
-				$rtn = array();
 				foreach($busca as $i=>$v)
 				{
 					$patron='/<td class="bgn" colspan=1>'.$v.':[ ]*<\/td>\r\n[ ]+<td class="bg" colspan=[1|3]+>(.*)<\/td>/';
