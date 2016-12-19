@@ -37,7 +37,7 @@
 				$output = preg_match_all($patron, $Page, $matches, PREG_SET_ORDER);
 				if(isset($matches[0]))
 				{
-					$RS = str_replace('"','', ($matches[0][1]));
+					$RS = utf8_encode(str_replace('"','', ($matches[0][1])));
 					$rtn = array("RUC"=>$ruc,"RazonSocial"=>trim($RS));
 				}
 				$busca=array(
@@ -59,7 +59,7 @@
 					$output = preg_match_all($patron, $Page, $matches, PREG_SET_ORDER);
 					if(isset($matches[0]))
 					{
-						$rtn[$i] = trim(preg_replace( "[\s+]"," ", ($matches[0][1]) ) );
+						$rtn[$i] = trim(utf8_encode( preg_replace( "[\s+]"," ", ($matches[0][1]) ) ) );
 					}
 				}
 			}
