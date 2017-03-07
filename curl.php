@@ -10,7 +10,7 @@
 		var $info;
 		var $error;
 		var $url = false;
-		
+
 		var $request_cookies = '';
 		var $response_cookies = '';
 		var $content = '';
@@ -19,7 +19,7 @@
 		{
 			return $this->info;
 		}
-		function cURL($cookies=TRUE,$referer='http://www.google.com',$cookie='cookies.txt',$compression='gzip,deflate',$proxy='')
+		function cURL($cookies=TRUE,$referer='http://sisweb.reniec.gob.pe/sioconsultasRRCC/login.do',$cookie='cookies.txt',$compression='gzip,deflate',$proxy='')
 		{
 			$this->headers[0] = "Accept-Encoding: gzip, deflate, sdch";
 			$this->headers[] = "Accept-Language: es-419,es;q=0.8";
@@ -80,6 +80,7 @@
 				curl_close($ch);
 				return false;
 			}
+			//var_dump($result);
 			$this->error 	= curl_getinfo($ch,CURLINFO_HTTP_CODE);
 			$this->url 		= curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);
 			//$this->url 		= curl_getinfo($ch,CURLINFO_REDIRECT_URL);
@@ -91,7 +92,42 @@
 			curl_close($ch);
 			return false;
 		}
-		
+
+		function postSTR( $url, $post ) // --data-binary
+		{
+			$this->headers = array();
+			$headers[] = 'Content-Type: application/json';
+			$headers[] = 'Content-Length: ' . strlen($post);
+
+			$defaults = array(
+				CURLOPT_HEADER => false,
+				CURLOPT_VERBOSE => false,
+				CURLOPT_URL=>$url,
+				CURLOPT_CUSTOMREQUEST=>"POST",
+				CURLOPT_SSL_VERIFYHOST=>false,
+				CURLOPT_POSTFIELDS=>$post,
+				CURLOPT_HTTPHEADER=>$headers,
+				CURLOPT_RETURNTRANSFER=>true,
+			);
+			$ch = curl_init();
+			curl_setopt_array($ch, $defaults);
+			if(!$result = curl_exec($ch))
+			{
+				curl_close($ch);
+				return false;
+			}
+			$this->error 	= curl_getinfo($ch,CURLINFO_HTTP_CODE);
+			$this->url 		= curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);
+			//$this->url 		= curl_getinfo($ch,CURLINFO_REDIRECT_URL);
+			if($this->error < 400)
+			{
+				curl_close($ch);
+				return $result;
+			}
+			curl_close($ch);
+			return false;
+		}
+
 		function get( $url, array $options = array() )
 		{
 			$defaults = array(
@@ -128,18 +164,18 @@
 			curl_close($ch);
 			return false;
 		}
-		
-		function referer($url = "https://www,google.com")
+
+		function referer($url = "https://cel.reniec.gob.pe/valreg/valreg.do")
 		{
 			$this->referer=$url;
 		}
-		
+
 		function error($error)
 		{
 			echo "<center><div style='width:500px;border: 3px solid #FFEEFF; padding: 3px; background-color: #FFDDFF;font-family: verdana; font-size: 10px'><b>cURL Error</b><br>$error</div></center>";
 			die;
 		}
-		
+
 		// ////////////////////////////////////////////////
 
 		function set_cookies_string($cookies)
@@ -160,13 +196,13 @@
 					$cookies = trim($matches[0][1]);
 				}
 			}
-			
+
 			if($this->response_cookies != 'Cookie: ' . $cookies . "\r\n" && $cookies != "")
 			{
 				$this->response_cookies = 'Cookie: ' . $cookies . "\r\n";
 			}
 		}
-		
+
 		function get2( $url, array $options = array() )
 		{
 			$defaults = array(
@@ -178,11 +214,11 @@
 			$opts = array(
 				'http' => $options
 			);
-			
+
 			$context = stream_context_create($opts);
 			$this->content = file_get_contents($url, false, $context);
 			$this->get_cookies($http_response_header);
-			
+
 			return $this->content;
 		}
 
@@ -200,16 +236,16 @@
 					'content' => join('&', $post_content),
 					'timeout' => 600
 			);
-			
+
 			$options += $defaults;
 			$opts = array(
 				'http' => $options
 			);
-			
+
 			$context = stream_context_create($opts);
 			$this->content = file_get_contents($url, false, $context);
 			$this->get_cookies($http_response_header);
-			
+
 			return $this->content;
 		}
 	}
