@@ -5,15 +5,12 @@
 		function __construct()
 		{
 			$this->path = dirname(__FILE__);
-			$this->cc = new cURL(true,'http://www.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias',$this->path.'/cookies.txt');
+			$this->cc = new cURL(true,'http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias',$this->path.'/cookies.txt');
 		}
 		function ProcesaNumRand()
 		{
-			$data = array(
-				"accion"=>"random"
-			);
-			$url="http://www.sunat.gob.pe/cl-ti-itmrconsruc/captcha";
-			$numRand = $this->cc->post($url,$data);
+			$url="http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/captcha?accion=random";
+			$numRand = $this->cc->post($url);
 			return $numRand;
 		}
 		
@@ -43,9 +40,8 @@
 					"numRnd" => $captcha
 				);
 				
-				$url = "http://www.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias";
+				$url = "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias";
 				$Page = $this->cc->post($url,$data);
-				file_put_contents(__DIR__."/code.txt", $Page);
 				//RazonSocial
 				$patron='/<input type="hidden" name="desRuc" value="(.*)">/';
 				$output = preg_match_all($patron, $Page, $matches, PREG_SET_ORDER);
