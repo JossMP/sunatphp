@@ -42,6 +42,7 @@
 				
 				$url = "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias";
 				$Page = $this->cc->post($url,$data);
+				file_put_contents("aa.txt",$Page);
 				//RazonSocial
 				$patron='/<input type="hidden" name="desRuc" value="(.*)">/';
 				$output = preg_match_all($patron, $Page, $matches, PREG_SET_ORDER);
@@ -58,11 +59,19 @@
 					$rtn["Telefono"] = trim($matches[0][1]);
 				}
 				
+				$patron='/<td class="bgn"[ ]*colspan=1[ ]*>Condici&oacute;n del Contribuyente:[ ]*<\/td>\r\n[\t]*[ ]+<td class="bg" colspan=[1|3]+>[\r\n\t[ ]+]*(.*)[\r\n\t[ ]+]*<\/td>/';
+				$output = preg_match_all($patron, $Page, $matches, PREG_SET_ORDER);
+				if( isset($matches[0]) )
+				{
+					$rtn["Condicion"] = trim($matches[0][1]);
+				}
+				
 				$busca=array(
 					"NombreComercial" 		=> "Nombre Comercial",
 					"Tipo" 					=> "Tipo Contribuyente",
 					"Inscripcion" 			=> "Fecha de Inscripci&oacute;n",
 					"Estado" 				=> "Estado del Contribuyente",
+					//"Condicion" 			=> "Condici&oacute;n del Contribuyente",
 					"Direccion" 			=> "Direcci&oacute;n del Domicilio Fiscal",
 					"SistemaEmision" 		=> "Sistema de Emisi&oacute;n de Comprobante",
 					"ActividadExterior"		=> "Actividad de Comercio Exterior",
@@ -74,7 +83,7 @@
 				);
 				foreach($busca as $i=>$v)
 				{
-					$patron='/<td class="bgn" colspan=1[ ]*>'.$v.':[ ]*<\/td>\r\n[ ]+<td class="bg" colspan=[1|3]+>(.*)<\/td>/';
+					$patron='/<td class="bgn"[ ]*colspan=1[ ]*>'.$v.':[ ]*<\/td>\r\n[\t]*[ ]+<td class="bg" colspan=[1|3]+>(.*)<\/td>/';
 					$output = preg_match_all($patron, $Page, $matches, PREG_SET_ORDER);
 					if(isset($matches[0]))
 					{
