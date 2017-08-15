@@ -1,252 +1,179 @@
 <?php
 	class cURL
 	{
-		var $headers;
-		var $user_agent;
-		var $compression;
-		var $cookie_file;
-		var $proxy;
-		var $referer;
-		var $info;
-		var $error;
-		var $url = false;
+		protected $_useragent = 'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:53.0) Gecko/20100101 Firefox/53.0';
+		protected $_url;
+		protected $_followlocation;
+		protected $_timeout;
+		protected $_httpheaderData = array();
+		protected $_httpheader = array('Expect:');
+		protected $_maxRedirects;
+		protected $_cookieFileLocation;
+		protected $_post;
+		protected $_postFields;
+		protected $_referer ="https://www.google.com/";
 
-		var $request_cookies = '';
-		var $response_cookies = '';
-		var $content = '';
+		protected $_session;
+		protected $_webpage;
+		protected $_includeHeader;
+		protected $_noBody;
+		protected $_status;
+		protected $_binary;
+		protected $_binaryFields;
 
-		function getInfo()
-		{
-			return $this->info;
-		}
-		function cURL($cookies=TRUE,$referer='http://sisweb.reniec.gob.pe/sioconsultasRRCC/login.do',$cookie='cookies.txt',$compression='gzip,deflate',$proxy='')
-		{
-			$this->headers[0] = "Accept-Encoding: gzip, deflate, sdch";
-			$this->headers[] = "Accept-Language: es-419,es;q=0.8";
-			$this->headers[] = "User-Agent: Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36";
-			$this->headers[] = "Content-Type: application/x-www-form-urlencoded";
-			$this->headers[] = "DNT: 1";
-			$this->headers[] = "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-			$this->headers[] = "X-Requested-With: XMLHttpRequest";
-			$this->headers[] = "Connection: keep-alive";
+		public    $authentication = false;
+		public    $auth_name      = '';
+		public    $auth_pass      = '';
 
-			$this->user_agent = 'Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36';
-			$this->compression=$compression;
-			$this->proxy=$proxy;
-			$this->cookies=$cookies;
-			$this->referer=$referer;
-			if($this->cookies == TRUE)
-				$this->cookie($cookie);
-		}
-		function cookie($cookie_file)
+		public function __construct( $followlocation = true, $timeOut = 30, $maxRedirecs = 4, $binary = false, $includeHeader = false, $noBody = false )
 		{
-			if (file_exists($cookie_file))
-			{
-				$this->cookie_file=$cookie_file;
-			}
-			else
-			{
-				//fopen($cookie_file,'w') or $this->error('The cookie file could not be opened. Make sure this directory has the correct permissions');
-				//fclose($this->cookie_file);
-				file_put_contents($cookie_file,"");
-				$this->cookie_file=$cookie_file;
-			}
-		}
-		function post( $url, array $post = array(), array $options = array() )
-		{
-			$defaults = array(
-				CURLOPT_HEADER => false,
-				CURLOPT_FOLLOWLOCATION => true,
-				CURLOPT_SSL_VERIFYPEER => false,
-				CURLOPT_REFERER => $this->referer,
-				CURLOPT_USERAGENT => $this->user_agent,
-				CURLOPT_COOKIEFILE => $this->cookie_file,
-				CURLOPT_COOKIEJAR => $this->cookie_file,
-				CURLOPT_URL => $url,
-				CURLOPT_FRESH_CONNECT => true,
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_FORBID_REUSE => true,
-				CURLOPT_TIMEOUT => 250,
-				CURLOPT_ENCODING => $this->compression,
-				CURLOPT_HTTPHEADER => $this->headers,
-				//CURLINFO_HEADER_OUT => false,
-				CURLOPT_POST => true,
-				CURLOPT_POSTFIELDS => http_build_query($post)
-			);
-			$ch = curl_init();
-			curl_setopt_array($ch, ($options + $defaults));
-			if(!$result = curl_exec($ch))
-			{
-				curl_close($ch);
-				return false;
-			}
-			//var_dump($result);
-			$this->error 	= curl_getinfo($ch,CURLINFO_HTTP_CODE);
-			$this->url 		= curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);
-			//$this->url 		= curl_getinfo($ch,CURLINFO_REDIRECT_URL);
-			if($this->error < 400)
-			{
-				curl_close($ch);
-				return $result;
-			}
-			curl_close($ch);
-			return false;
+			$this->_followlocation = $followlocation;
+			$this->_timeout = $timeOut;
+			$this->_maxRedirects = $maxRedirecs;
+			$this->_noBody = $noBody;
+			$this->_includeHeader = $includeHeader;
+			$this->_binary = $binary;
+
+			$this->_cookieFileLocation = dirname(__FILE__).'/cookie.txt';
 		}
 
-		function postSTR( $url, $post ) // --data-binary
+		public function useAuth( $use )
 		{
-			$this->headers = array();
-			$headers[] = 'Content-Type: application/json';
-			$headers[] = 'Content-Length: ' . strlen($post);
-
-			$defaults = array(
-				CURLOPT_HEADER => false,
-				CURLOPT_VERBOSE => false,
-				CURLOPT_URL=>$url,
-				CURLOPT_CUSTOMREQUEST=>"POST",
-				CURLOPT_SSL_VERIFYHOST=>false,
-				CURLOPT_POSTFIELDS=>$post,
-				CURLOPT_HTTPHEADER=>$headers,
-				CURLOPT_RETURNTRANSFER=>true,
-			);
-			$ch = curl_init();
-			curl_setopt_array($ch, $defaults);
-			if(!$result = curl_exec($ch))
-			{
-				curl_close($ch);
-				return false;
-			}
-			$this->error 	= curl_getinfo($ch,CURLINFO_HTTP_CODE);
-			$this->url 		= curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);
-			//$this->url 		= curl_getinfo($ch,CURLINFO_REDIRECT_URL);
-			if($this->error < 400)
-			{
-				curl_close($ch);
-				return $result;
-			}
-			curl_close($ch);
-			return false;
+			$this->authentication = false;
+			if($use == true) $this->authentication = true;
 		}
 
-		function get( $url, array $options = array() )
+		public function setName( $name )
 		{
-			$defaults = array(
-				CURLOPT_HEADER => false,
-				CURLOPT_FOLLOWLOCATION => true,
-				CURLOPT_SSL_VERIFYPEER => false,
-				CURLOPT_REFERER => $this->referer,
-				CURLOPT_USERAGENT => $this->user_agent,
-				CURLOPT_COOKIEFILE => $this->cookie_file,
-				CURLOPT_COOKIEJAR => $this->cookie_file,
-				CURLOPT_URL => $url,
-				CURLOPT_FRESH_CONNECT => true,
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_FORBID_REUSE => true,
-				CURLOPT_TIMEOUT => 250,
-				CURLOPT_ENCODING => $this->compression,
-				CURLOPT_HTTPHEADER => $this->headers
-			);
-			$ch = curl_init();
-			curl_setopt_array($ch, ($options + $defaults));
-			if(!$result = curl_exec($ch))
+			$this->auth_name = $name;
+		}
+		public function setPass( $pass )
+		{
+			$this->auth_pass = $pass;
+		}
+
+		public function setReferer( $referer )
+		{
+			$this->_referer = $referer;
+		}
+
+		public function setHttpHeader( $httpheader=array() )
+		{
+			$this->_httpheader = array();
+			foreach( $httpheader as $i=>$v )
 			{
-				curl_close($ch);
-				return false;
+				$this->_httpheaderData[$i]=$v;
 			}
-			$this->error 	= curl_getinfo($ch,CURLINFO_HTTP_CODE);
-			$this->url 		= curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);
-			//$this->url 		= curl_getinfo($ch,CURLINFO_REDIRECT_URL);
-			if($this->error < 400)
+			foreach( $this->_httpheaderData as $i=>$v )
 			{
-				curl_close($ch);
-				return $result;
-			}
-			curl_close($ch);
-			return false;
-		}
-
-		function referer($url = "https://cel.reniec.gob.pe/valreg/valreg.do")
-		{
-			$this->referer=$url;
-		}
-
-		function error($error)
-		{
-			echo "<center><div style='width:500px;border: 3px solid #FFEEFF; padding: 3px; background-color: #FFDDFF;font-family: verdana; font-size: 10px'><b>cURL Error</b><br>$error</div></center>";
-			die;
-		}
-
-		// ////////////////////////////////////////////////
-
-		function set_cookies_string($cookies)
-		{
-			$this->response_cookies = 'Cookie: ' . $cookies . "\r\n";
-		}
-
-		private function get_cookies( $http_response_header = array() )
-		{
-			$cookies = "";
-			if( is_array($http_response_header) )
-			foreach($http_response_header as $s)
-			{
-				$patron = '/Set-Cookie: (.*)/';
-				$output = preg_match_all($patron, $s, $matches, PREG_SET_ORDER);
-				if(isset($matches[0]))
-				{
-					$cookies = trim($matches[0][1]);
-				}
-			}
-
-			if($this->response_cookies != 'Cookie: ' . $cookies . "\r\n" && $cookies != "")
-			{
-				$this->response_cookies = 'Cookie: ' . $cookies . "\r\n";
+				$this->_httpheader[]=$i.":".$v;
 			}
 		}
 
-		function get2( $url, array $options = array() )
+		public function setCookiFileLocation( $path )
 		{
-			$defaults = array(
-				'method' 	=> 'GET',
-				'header' 	=> join("\r\n", $this->headers) . "\r\n" . $this->response_cookies,
-				'timeout' 	=> 600
-			);
-			$options += $defaults;
-			$opts = array(
-				'http' => $options
-			);
-
-			$context = stream_context_create($opts);
-			$this->content = file_get_contents($url, false, $context);
-			$this->get_cookies($http_response_header);
-
-			return $this->content;
+			$this->_cookieFileLocation = $path;
+			if ( !file_exists($this->_cookieFileLocation) )
+			{
+				file_put_contents($this->_cookieFileLocation,"");
+			}
 		}
 
-		function post2( $url, $post_data, array $options = array() )
+		public function setPost( $postFields = array() )
 		{
-			$post_content = array();
-			foreach ($post_data as $key => $value)
+			$this->_binary = false;
+			$this->_post = true;
+			$this->_postFields = http_build_query($postFields);
+		}
+
+		public function setBinary( $postBinaryFields = "" )
+		{
+			$this->_post = false;
+			$this->_binary = true;
+			$this->_binaryFields = $postBinaryFields;
+		}
+
+		public function setUserAgent( $userAgent )
+		{
+			$this->_useragent = $userAgent;
+		}
+
+		public function createCurl( $url = 'nul' )
+		{
+			if($url != 'nul')
 			{
-				$post_content[] = $key .'='.$value;
+				$this->_url = $url;
 			}
 
-			$defaults = array(
-					'method' => 'POST',
-					'header' => join("\r\n", $this->headers) . "\r\n" . $this->response_cookies,
-					'content' => join('&', $post_content),
-					'timeout' => 600
-			);
+			$s = curl_init();
+			curl_setopt($s,CURLOPT_URL,$this->_url);
+			curl_setopt($s,CURLOPT_HTTPHEADER,$this->_httpheader);
+			curl_setopt($s,CURLOPT_TIMEOUT,$this->_timeout);
+			curl_setopt($s,CURLOPT_MAXREDIRS,$this->_maxRedirects);
+			curl_setopt($s,CURLOPT_RETURNTRANSFER,true);
+			curl_setopt($s,CURLOPT_FOLLOWLOCATION,$this->_followlocation);
+			curl_setopt($s,CURLOPT_COOKIEJAR,$this->_cookieFileLocation);
+			curl_setopt($s,CURLOPT_COOKIEFILE,$this->_cookieFileLocation);
 
-			$options += $defaults;
-			$opts = array(
-				'http' => $options
-			);
+			if($this->authentication == true)
+			{
+				curl_setopt($s, CURLOPT_USERPWD, $this->auth_name.':'.$this->auth_pass);
+			}
 
-			$context = stream_context_create($opts);
-			$this->content = file_get_contents($url, false, $context);
-			$this->get_cookies($http_response_header);
+			if($this->_post)
+			{
+				curl_setopt($s,CURLOPT_POST,true);
+				curl_setopt($s,CURLOPT_POSTFIELDS,$this->_postFields);
+			}
 
-			return $this->content;
+			if($this->_binary)
+			{
+				curl_setopt($s,CURLOPT_BINARYTRANSFER,true);
+				curl_setopt($s,CURLOPT_POSTFIELDS, $this->_binaryFields);
+				$this->setHttpHeader( array('Content-Length'=>strlen($this->_binaryFields)) );
+			}
+
+			if($this->_includeHeader)
+			{
+				curl_setopt($s,CURLOPT_HEADER,true);
+			}
+
+			if($this->_noBody)
+			{
+				curl_setopt($s,CURLOPT_NOBODY,true);
+			}
+
+			curl_setopt($s,CURLOPT_USERAGENT,$this->_useragent);
+			curl_setopt($s,CURLOPT_REFERER,$this->_referer);
+			$this->_webpage = curl_exec($s);
+			$this->_status = curl_getinfo($s,CURLINFO_HTTP_CODE);
+			curl_close($s);
+		}
+
+		public function getHttpStatus()
+		{
+			return $this->_status;
+		}
+
+		public function __toString()
+		{
+			return $this->_webpage;
+		}
+		// simplificado
+		public function send( string $url, array $post = array() )
+		{
+			if( count($post)!=0 )
+				$this->setPost( $post );
+
+			$this->createCurl( $url );
+			return $this->_webpage;
+		}
+		public function sendBinary(string $url, string $binary="")
+		{
+			if( $binary != "" )
+				$this->setBinary( $binary );
+			$this->createCurl( $url );
+			return $this->_webpage;
 		}
 	}
 ?>
