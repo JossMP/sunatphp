@@ -168,7 +168,7 @@
 			$this->createCurl( $url );
 			return $this->_webpage;
 		}
-		public function sendBinary(string $url, string $binary="")
+		public function sendBinary(string $url, $binary="")
 		{
 			if( $binary != "" )
 				$this->setBinary( $binary );
