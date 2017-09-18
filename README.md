@@ -1,17 +1,32 @@
 # SUNAT PERU
 Clase php para consultar los datos de la web de [Sunat Perú], puedes ver una demo [aqui].
+### Instalacion
+```sh
+	composer require "jossmp/sunatphp"
+```
 ### Metodo de Uso
 ```sh
 <?php
-    require ("curl.php");
-    require ("sunat.php");
-    $cliente = new Sunat();
-    $ruc = "20549500553";
-    $dni = "00000000";
-    //---------RUC----------
-    print_r ( $cliente->search($ruc) );
-    //---------DNI----------
-    print_r ( $cliente->search($dni) );
+	require_once("vendor/autoload.php");
+	use service\Sunat;
+	$cliente = new Sunat();
+	$ruc="20549500553"; // RUC de 11 digitos
+	$dni="00000000"; // DNI de 8 digitos
+	print_r ( $cliente->search( $ruc ) );
+	print_r ( $cliente->search( $dni ) );
+?>
+```
+si no usa composer
+```sh
+<?php
+	require_once("src/curl.php");
+	require_once("src/sunat.php");
+	use service\Sunat;
+	$cliente = new Sunat();
+	$ruc="20549500553"; // RUC de 11 digitos
+	$dni="00000000"; // DNI de 8 digitos
+	print_r ( $cliente->search( $ruc ) );
+	print_r ( $cliente->search( $dni ) );
 ?>
 ```
 como resultado la funcion search nos retornara un array con los datos obtenidos, de no obtener los datos o aver algun error en el formato del ruc o dni nos retorna un mesaje de error
@@ -50,4 +65,4 @@ Array
 ```
 
 [Sunat Perú]: <http://www.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias>
-[aqui]: <https://geekdev.ml/demos>
+[aqui]: <https://demos.geekdev.ml/sunat>

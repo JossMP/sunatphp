@@ -1,17 +1,24 @@
 {
-    "name": "jossmp/sunatphp",
+    "name": "JossMP/SunatPHP",
     "description": "Clases para cosnultas Sunat PERU",
+    "keywords": ["Sunat", "Peru", "PHP", "Consulta"],
     "license": "MIT",
+    "homepage" : "https://github.com/JossMP/SunatPHP",
     "authors": [
         {
             "name": "josue",
-            "email": "jossmp@gmail.com"
+            "email": "jossmp@gmail.com",
+            "homepage" : "https://geekdev.ml/",
+            "role" : "Developers"
         }
     ],
+	"type": "library",
+    "require": {
+		"php": ">=5.2"
+	},
     "autoload":{
 		"psr-4":{
 			"service\\":"src/"
 		}
-	},
-    "require": {}
+	}
 }
