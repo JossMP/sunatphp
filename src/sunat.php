@@ -1,4 +1,7 @@
 <?php
+	namespace service;
+	use service\lib\cURL;
+	
 	class Sunat{
 		var $cc;  // cUrl
 		function __construct()

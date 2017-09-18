@@ -1,4 +1,5 @@
 <?php
+	namespace service\lib;
 	class cURL
 	{
 		protected $_useragent = 'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:53.0) Gecko/20100101 Firefox/53.0';
@@ -168,7 +169,7 @@
 			$this->createCurl( $url );
 			return $this->_webpage;
 		}
-		public function sendBinary(string $url, $binary="")
+		public function sendBinary(string $url, string $binary="")
 		{
 			if( $binary != "" )
 				$this->setBinary( $binary );

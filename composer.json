@@ -1,0 +1,17 @@
+{
+    "name": "jossmp/sunatphp",
+    "description": "Clases para cosnultas Sunat PERU",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "josue",
+            "email": "jossmp@gmail.com"
+        }
+    ],
+    "autoload":{
+		"psr-4":{
+			"service\\":"src/"
+		}
+	},
+    "require": {}
+}
