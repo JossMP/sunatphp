@@ -2,7 +2,7 @@
 Clase php para consultar los datos de la web de [Sunat Perú], puedes ver una demo [aqui].
 ### Instalacion
 ```sh
-	composer require "jossmp/sunatphp"
+	composer require -o "jossmp/sunatphp"
 ```
 ### Metodo de Uso
 ```sh
