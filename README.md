@@ -8,28 +8,15 @@ Clase php para consultar los datos de la web de [Sunat Perú], puedes ver una de
 ```sh
 <?php
 	require_once("vendor/autoload.php");
-	use service\Sunat;
-	$cliente = new Sunat();
+	//require_once("src/autoload.php");
+	$cliente = new \Sunat\Sunat();
 	$ruc="20549500553"; // RUC de 11 digitos
 	$dni="00000000"; // DNI de 8 digitos
 	print_r ( $cliente->search( $ruc ) );
 	print_r ( $cliente->search( $dni ) );
 ?>
 ```
-si no usa composer
-```sh
-<?php
-	require_once("src/curl.php");
-	require_once("src/sunat.php");
-	use service\Sunat;
-	$cliente = new Sunat();
-	$ruc="20549500553"; // RUC de 11 digitos
-	$dni="00000000"; // DNI de 8 digitos
-	print_r ( $cliente->search( $ruc ) );
-	print_r ( $cliente->search( $dni ) );
-?>
-```
-como resultado la funcion search nos retornara un array con los datos obtenidos, de no obtener los datos o aver algun error en el formato del ruc o dni nos retorna un mesaje de error
+como resultado la funcion search nos retornara un array con los datos obtenidos, de no obtener los datos o encontrar algun error en el formato del ruc o dni nos retorna un mesaje de error
 
 ```sh
 Array
@@ -63,6 +50,12 @@ Array
     [msg] => Nro de RUC o DNI no valido.
 )
 ```
+Tambien puedes usar el 2do parametro de la funciona search para tener como respuesta un objeto JSON
+
+```sh
+	$cliente->search( $ruc ,true );
+```
+
 
 [Sunat Perú]: <http://www.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias>
 [aqui]: <https://demos.geekdev.ml/sunat>

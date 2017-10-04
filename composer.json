@@ -1,24 +1,30 @@
 {
-    "name": "JossMP/SunatPHP",
-    "description": "Clases para cosnultas Sunat PERU",
-    "keywords": ["Sunat", "Peru", "PHP", "Consulta"],
-    "license": "MIT",
+    "name": "jossmp/sunatphp",
+    "description": "Clase para realizar consultas a sunat Peru mediante el numero de ruc o dni",
+    "type": "library",
+    "keywords": ["Sunat", "Peru", "PHP", "Consulta", "cURL"],
     "homepage" : "https://github.com/JossMP/SunatPHP",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "optimize-autoloader": true,
     "authors": [
         {
-            "name": "josue",
+            "name": "Josue Mazco Puma",
             "email": "jossmp@gmail.com",
             "homepage" : "https://geekdev.ml/",
             "role" : "Developers"
         }
     ],
-	"type": "library",
     "require": {
-		"php": ">=5.2"
-	},
+        "ext-curl": "*",
+        "lib-curl": "*"
+    },
+    "require-dev": {
+        "php": ">=5.2"
+    },
     "autoload":{
 		"psr-4":{
-			"service\\":"src/"
+			"Sunat\\":"src/"
 		}
 	}
 }

@@ -1,5 +1,5 @@
 <?php
-	namespace service\lib;
+	namespace Sunat;
 	class cURL
 	{
 		protected $_useragent = 'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:53.0) Gecko/20100101 Firefox/53.0';
@@ -35,7 +35,7 @@
 			$this->_includeHeader = $includeHeader;
 			$this->_binary = $binary;
 
-			$this->_cookieFileLocation = dirname(__FILE__).'/cookie.txt';
+			$this->_cookieFileLocation = __DIR__.'/cookie.txt';
 		}
 
 		public function useAuth( $use )
@@ -161,7 +161,7 @@
 			return $this->_webpage;
 		}
 		// simplificado
-		public function send( string $url, array $post = array() )
+		public function send( $url, $post = array() )
 		{
 			if( count($post)!=0 )
 				$this->setPost( $post );
@@ -169,7 +169,7 @@
 			$this->createCurl( $url );
 			return $this->_webpage;
 		}
-		public function sendBinary(string $url, string $binary="")
+		public function sendBinary( $url, $binary="" )
 		{
 			if( $binary != "" )
 				$this->setBinary( $binary );

@@ -1,12 +1,10 @@
 <?php
-	namespace service;
-	use service\lib\cURL;
-	
+	namespace Sunat;
 	class Sunat{
 		var $cc;  // cUrl
 		function __construct()
 		{
-			$this->cc = new cURL();
+			$this->cc = new \Sunat\cURL();
 		}
 		function getNumRand()
 		{
