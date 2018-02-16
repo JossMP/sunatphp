@@ -1,14 +1,23 @@
 <?php
 	namespace Sunat;
 	class Sunat{
-		var $cc;  // cUrl
-		function __construct()
+		var $cc;
+		var $_legal=false;
+		var $_trabs=false;
+		function __construct( $representantes_legales=false, $cantidad_trabajadores=false )
 		{
+			$this->_legal = $representantes_legales;
+			$this->_trabs = $cantidad_trabajadores;
+			
 			$this->cc = new \Sunat\cURL();
+			$this->cc->setReferer( "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/frameCriterioBusqueda.jsp" );
+			$this->cc->useCookie( true );
+			$this->cc->setCookiFileLocation( __DIR__ . "/cookie.txt" );
 		}
+		
 		function getNumRand()
 		{
-			$url="http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/captcha?accion=random";
+			$url = "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/captcha?accion=random";
 			$numRand = $this->cc->send($url);
 			return $numRand;
 		}
@@ -25,7 +34,7 @@
 				);
 
 				$url = "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias";
-				$Page = $this->cc->send($url,$data);
+				$Page = $this->cc->send( $url, $data );
 
 				//RazonSocial
 				$patron='/<input type="hidden" name="desRuc" value="(.*)">/';
@@ -78,9 +87,82 @@
 			}
 			if( count($rtn) > 2 )
 			{
-				return $rtn;
+				$legal = array();
+				if($this->_legal)
+				{
+					$legal = $this->RepresentanteLegal( $ruc );
+				}
+				$trabs = array();
+				if($this->_trabs)
+				{
+					$trabs = $this->numTrabajadores( $ruc );
+				}
+				
+				return $rtn + array( "representantes_legales"=>$legal,"cantidad_trabajadores"=>$trabs );
 			}
 			return false;
+		}
+		function numTrabajadores( $ruc )
+		{
+			$url = "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias";
+			$data = array(
+				"accion" 	=> "getCantTrab",
+				"nroRuc" 	=> $ruc,
+				"desRuc" 	=> ""
+			);
+			$rtn = $this->cc->send( $url, $data );
+			if( $rtn!="" && $this->cc->getHttpStatus()==200 )
+			{
+				$patron = "/<td align='center'>(.*)-(.*)<\/td>[\t|\s|\n]+<td align='center'>(.*)<\/td>[\t|\s|\n]+<td align='center'>(.*)<\/td>[\t|\s|\n]+<td align='center'>(.*)<\/td>/";
+				$output = preg_match_all($patron, $rtn, $matches, PREG_SET_ORDER);
+				if( count($matches) > 0 )
+				{
+					//foreach( array_reverse($matches) as $obj )
+					foreach( $matches as $obj )
+					{
+						$cantidad_trabajadores[]=array(
+							"periodo" 				=> $obj[1]."-".$obj[2],
+							"anio" 					=> $obj[1],
+							"mes" 					=> $obj[2],
+							"total_trabajadores" 	=> $obj[3],
+							"pensionista" 			=> $obj[4],
+							"prestador_servicio" 	=> $obj[5]
+						);
+					}
+					return $cantidad_trabajadores;
+				}
+			}
+			return array();
+		}
+		function RepresentanteLegal( $ruc )
+		{
+			$url = "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias";
+			$data = array(
+				"accion" 	=> "getRepLeg",
+				"nroRuc" 	=> $ruc,
+				"desRuc" 	=> ""
+			);
+			$rtn = $this->cc->send( $url, $data );
+			if( $rtn!="" && $this->cc->getHttpStatus()==200 )
+			{
+				$patron = '/<td class=bg align="left">[\t|\s|\n]+(.*)<\/td>[\t|\s|\n]+<td class=bg align="center">[\t|\s|\n]+(.*)<\/td>[\t|\s|\n]+<td class=bg align="left">[\t|\s|\n]+(.*)<\/td>[\t|\s|\n]+<td class=bg align="left">[\t|\s|\n]+(.*)<\/td>[\t|\s|\n]+<td class=bg align="left">[\t|\s|\n]+(.*)<\/td>/';
+				$output = preg_match_all($patron, $rtn, $matches, PREG_SET_ORDER);
+				if( count($matches) > 0 )
+				{
+					foreach( $matches as $obj )
+					{
+						$representantes_legales[]=array(
+							"tipodoc" 				=> trim($obj[1]),
+							"numdoc" 				=> trim($obj[2]),
+							"nombre" 				=> trim($obj[3]),
+							"cargo" 				=> trim($obj[4]),
+							"desde" 				=> trim($obj[5]),
+						);
+					}
+					return $representantes_legales;
+				}
+			}
+			return array();
 		}
 		function dnitoruc($dni)
 		{
@@ -114,41 +196,6 @@
 			$valor = trim($valor);
 			if ( $valor )
 			{
-				/*if ( strlen($valor) == 8 ) // DNI
-				{
-					$suma = 0;
-					for ($i=0; $i<strlen($valor)-1;$i++)
-					{
-						$digito = $valor[$i];
-						if ( $i==0 )
-						{
-							$suma += ($digito*3);
-							echo $digito." x 3 = ".($digito*3)."\n";
-						}
-						else if ( $i==1 )
-						{
-							$suma += ($digito*2);
-							echo $digito." x 2 = ".($digito*2)."\n";
-						}
-						else
-						{
-							$suma += ($digito*(strlen($valor)-$i+1));
-							echo $digito." x ".(strlen($valor)-$i+1)." = ".($digito*(strlen($valor)-$i+1))."\n";
-						}
-					}
-					echo "suma=".$suma."\n";
-					$resto = $suma % 11;
-					echo "modulo=".$resto."\n";
-					if ( $resto == 1)
-					{
-						$resto = 11;
-					}
-					if ( $resto + ( $valor[strlen($valor)-1] ) == 11 )
-					{
-						return true;
-					}
-				}
-				else */
 				if ( strlen($valor) == 11 ) // RUC
 				{
 					$suma = 0;
@@ -196,23 +243,23 @@
 				if( $info!=false )
 				{
 					$rtn = array(
-						"success"=>true,
-						"result"=>$info
+						"success" 	=> true,
+						"result" 	=> $info
 					);
 				}
 				else
 				{
 					$rtn = array(
-						"success"=>false,
-						"msg"=>"No se ha encontrado resultados."
+						"success" 	=> false,
+						"msg" 		=> "No se ha encontrado resultados."
 					);
 				}
 				return ($inJSON==true)?json_encode($rtn,JSON_PRETTY_PRINT):$rtn;
 			}
 
 			$rtn = array(
-				"success"=>false,
-				"msg"=>"Nro de RUC o DNI no valido."
+				"success" 	=> false,
+				"msg" 		=> "Nro de RUC o DNI no valido."
 			);
 			return ($inJSON==true)?json_encode($rtn,JSON_PRETTY_PRINT):$rtn;
 		}
