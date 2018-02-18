@@ -92,13 +92,16 @@
 				{
 					$legal = $this->RepresentanteLegal( $ruc );
 				}
+				$rtn["representantes_legales"] = $legal;
+				
 				$trabs = array();
 				if($this->_trabs)
 				{
 					$trabs = $this->numTrabajadores( $ruc );
 				}
+				$rtn["cantidad_trabajadores"] = $trabs;
 				
-				return $rtn + array( "representantes_legales"=>$legal,"cantidad_trabajadores"=>$trabs );
+				return $rtn;
 			}
 			return false;
 		}
@@ -117,6 +120,7 @@
 				$output = preg_match_all($patron, $rtn, $matches, PREG_SET_ORDER);
 				if( count($matches) > 0 )
 				{
+					$cantidad_trabajadores = array();
 					//foreach( array_reverse($matches) as $obj )
 					foreach( $matches as $obj )
 					{
@@ -149,13 +153,14 @@
 				$output = preg_match_all($patron, $rtn, $matches, PREG_SET_ORDER);
 				if( count($matches) > 0 )
 				{
+					$representantes_legales = array();
 					foreach( $matches as $obj )
 					{
 						$representantes_legales[]=array(
 							"tipodoc" 				=> trim($obj[1]),
 							"numdoc" 				=> trim($obj[2]),
-							"nombre" 				=> trim($obj[3]),
-							"cargo" 				=> trim($obj[4]),
+							"nombre" 				=> utf8_encode(trim($obj[3])),
+							"cargo" 				=> utf8_encode(trim($obj[4])),
 							"desde" 				=> trim($obj[5]),
 						);
 					}
@@ -254,13 +259,13 @@
 						"msg" 		=> "No se ha encontrado resultados."
 					);
 				}
-				return ($inJSON==true)?json_encode($rtn,JSON_PRETTY_PRINT):$rtn;
+				return ($inJSON==true)?json_encode($rtn, JSON_PRETTY_PRINT):$rtn;
 			}
 
 			$rtn = array(
 				"success" 	=> false,
 				"msg" 		=> "Nro de RUC o DNI no valido."
 			);
-			return ($inJSON==true)?json_encode($rtn,JSON_PRETTY_PRINT):$rtn;
+			return ($inJSON==true)?json_encode($rtn, JSON_PRETTY_PRINT):$rtn;
 		}
 	}
