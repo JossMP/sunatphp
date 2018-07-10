@@ -9,7 +9,7 @@
 			$this->_legal = $representantes_legales;
 			$this->_trabs = $cantidad_trabajadores;
 			
-			$this->cc = new \Sunat\cURL();
+			$this->cc = new cURL();
 			$this->cc->setReferer( "http://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/frameCriterioBusqueda.jsp" );
 			$this->cc->useCookie( true );
 			$this->cc->setCookiFileLocation( __DIR__ . "/cookie.txt" );
