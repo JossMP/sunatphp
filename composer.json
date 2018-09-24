@@ -24,7 +24,9 @@
     },
     "autoload":{
 		"psr-4":{
-			"Sunat\\":"src/"
+			"Sunat\\":"src/",
+			"cURL\\":"src/",
+			"response\\":"src/"
 		}
 	}
 }

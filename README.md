@@ -1,61 +1,112 @@
 # SUNAT PERU
-Clase php para consultar los datos de la web de [Sunat Perú], puedes ver una demo [aqui].
-### Instalacion
-```sh
-	composer require -o "jossmp/sunatphp"
-```
+Clase php para consultar los datos de la web de [Sunat Perú] desde php.
+
 ### Metodo de Uso
 ```sh
 <?php
-	require_once("vendor/autoload.php");
-	//require_once("src/autoload.php");
-	$cliente = new \Sunat\Sunat();
-	$ruc="20549500553"; // RUC de 11 digitos
-	$dni="00000000"; // DNI de 8 digitos
-	print_r ( $cliente->search( $ruc ) );
-	print_r ( $cliente->search( $dni ) );
+	require_once( __DIR__ . "/src/autoload.php" );
+	
+	$company = new \Sunat\Sunat( true, true );
+	
+	$ruc = "20169004359";
+	$dni = "44274795";
+	
+	$search1 = $company->search( $ruc );
+	$search2 = $company->search( $dni );
+	
+	if( $search1->success == true )
+	{
+		echo "Empresa: " . $search1->result->razon_social;
+	}
+	
+	if( $search2->success == true )
+	{
+		echo "Persona: " . $search1->result->razon_social;
+	}
 ?>
 ```
-como resultado la funcion search nos retornara un array con los datos obtenidos, de no obtener los datos o encontrar algun error en el formato del ruc o dni nos retorna un mesaje de error
-
+### Error en busquedas / sin resultados
+en caso de no haber encontrado resultados $search->success es false
 ```sh
-Array
-(
-    [success] => 1
-    [result] => Array
-        (
-            [RUC] => 20549500553
-            [RazonSocial] => ASERCO EB EMPRESA INDIVIDUAL DE RESPONSABILIDAD LIMITADA
-            [Telefono] => 4260637 / 999354939
-            [Condicion] => HABIDO
-            [NombreComercial] => -
-            [Tipo] => EMPRESA INDIVIDUAL DE RESP. LTDA
-            [Inscripcion] => 06/09/2012
-            [Estado] => ACTIVO
-            [Direccion] => AV. PASEO DE LA REPUBLICA NRO. 291 INT. 903 (PLAZA GRAU) LIMA - LIMA - LIMA
-            [SistemaEmision] => MANUAL
-            [ActividadExterior] => SIN ACTIVIDAD
-            [SistemaContabilidad] => MANUAL
-            [EmisionElectronica] => -
-            [PLE] => -
-        )
-
-)
-```
-en caso de error:
-```sh
-Array
-(
-    [success] => 0
-    [msg] => Nro de RUC o DNI no valido.
-)
-```
-Tambien puedes usar el 2do parametro de la funciona search para tener como respuesta un objeto JSON
-
-```sh
-	$cliente->search( $ruc ,true );
+<?php
+	if( $search->success==false )
+	{
+		echo "ERROR : " . $search->message;
+	}
+?>
 ```
 
+### Datos que se obtienen
+```sh
+<?php
+	...
+	$search = $essalud->search( $dni );
+	$search = $mintra->search( $dni );
+	
+	$search->result->ruc;
+	$search->result->razon_social;
+	$search->result->condicion;
+	$search->result->nombre_comercial;
+	$search->result->tipo;
+	$search->result->fecha_inscripcion;
+	$search->result->estado;
+	$search->result->direccion; 			// Solo Empresas
+	$search->result->sistema_emision;
+	$search->result->actividad_exterior;
+	$search->result->oficio; 				// Solo Personas
+	$search->result->actividad_economica;
+	$search->result->sistema_contabilidad;
+	$search->result->emision_electronica;
+	$search->result->ple;
+	
+	$search->result->emision_electronica;	// array
+	$search->result->cantidad_trabajadores;	// array
+?>
+```
+### Mostrar Resultados en JSON / XML
+```sh
+<?php
+	...
+	if( $search->success == true )
+	{
+		echo $search->json( );
+		echo $search->json( 'callback' ); // para llamadas desde js
+	}
+	
+	if( $search->success == true )
+	{
+		echo PHP_EOL . $search->xml( ); 
+		echo PHP_EOL . $search->xml( 'persona' ); // define nodo raiz
+	}
+?>
+```
 
+### Instalacion mediante composer
+```sh
+	composer require -o "jossmp/sunatphp"
+```
+
+```sh
+<?php
+    require ("./vendor/autoload.php");
+    ...
+?>
+```
+
+### Pre-requisitos
+```sh
+- cURL
+- PHP 5.2.0 o superior
+```
+
+
+Tambien puede interesarte muestra clase para buscar datos de personas mediante el DNI: [Ver repositorio]
+Donaciones: [PayPal]
+
+
+Copyright (C), 2018 Josue Mazco GNU General Public License 3 (http://www.gnu.org/licenses/)
+
+[Ver repositorio]: <https://github.com/JossMP/datos-peru/>
+[Ver demo]: <https://www.peruanosenlinea.com/busca-personas-por-el-dni/>
+[PayPal]: <https://www.paypal.me/JossMP>
 [Sunat Perú]: <http://www.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias>
-[aqui]: <https://demos.geekdev.ml/sunat>
