@@ -40,10 +40,12 @@
 		{
 			unset( $this->{$name} );
 		}
+		
 		public function __toString()
 		{
 			return "";
 		}
+		
 		/** Desde PHP 5.4.0 **/
 		public function json( $callback = null, $pretty = false )
 		{

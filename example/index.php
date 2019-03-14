@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name = "viewport" content = "initial-scale = 1.0, user-scalable = no,  width=device-width">
-		<title>Consulta de RUC SUNAT sin Captcha Perú - GeekDev</title>
+		<title>Consulta de RUC SUNAT sin Captcha Perú</title>
 		<meta name="description" content="Consulta de Ruc SUNAT Perú sin captcha, descarga este codigo desde demos.geekdev.ml"/>
 		<meta name="keywords" content="buscar ruc, consultar ruc peru, api rest consulta ruc peru, ruc perú, consulta ruc sin captcha, ruc sunat 2017"/>
 		<meta property="og:locale" content="es_PE" />
@@ -27,7 +27,7 @@
 	</head>
 	<body>
 		<div class="container">
-			<h1 class="text-center p-3">Consulta RUC</h1>
+			<h1 class="text-center p-3">Consulta RUC SUNAT</h1>
 			<form class="form-horizontal" role="form" method="post" name="busqueda" id="busqueda" >
 				<div class="card border-info">
 					<div class="card-header bg-info text-center text-light">
