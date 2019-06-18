@@ -1,5 +1,5 @@
 <?php
-	namespace cURL;
+	namespace CURL;
 	class cURL
 	{
 		protected $_useragent = 'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:53.0) Gecko/20100101 Firefox/53.0';
@@ -9,7 +9,7 @@
 		protected $_httpheaderData = array();
 		protected $_httpheader = array('Expect:');
 		protected $_maxRedirects;
-		protected $_post;
+		protected $_post = false;
 		protected $_postFields;
 		protected $_referer = "https://www.google.com/";
 
@@ -18,12 +18,13 @@
 		protected $_includeHeader;
 		protected $_noBody;
 		protected $_status;
-		protected $_binary;
-		protected $_binaryFields;
 		protected $_custom_request 	= null;
+		
+		protected $_binary = false;
+		protected $_binary_fields;
 
 		protected $_cookie = false;
-		protected $_cookieFileLocation;
+		protected $_cookie_file_path;
 		
 		protected $_proxy 		= false;
 		protected $_proxy_host 	= '';
@@ -46,7 +47,7 @@
 			$this->_includeHeader = $includeHeader;
 			$this->_binary = $binary;
 
-			$this->_cookieFileLocation = __DIR__ .'/cookie.txt';
+			$this->_cookie_file_path = __DIR__ .'/cookie.txt';
 			$this->s = curl_init();
 		}
 		
@@ -116,10 +117,10 @@
 		}
 		public function setCookiFileLocation( $path )
 		{
-			$this->_cookieFileLocation = $path;
-			if ( !file_exists($this->_cookieFileLocation) )
+			$this->_cookie_file_path = $path;
+			if ( !file_exists($this->_cookie_file_path) )
 			{
-				file_put_contents($this->_cookieFileLocation,"");
+				file_put_contents($this->_cookie_file_path,"");
 			}
 		}
 		
@@ -153,13 +154,13 @@
 		{
 			$this->_post = false;
 			$this->_binary = true;
-			$this->_binaryFields = $postBinaryFields;
+			$this->_binary_fields = $postBinaryFields;
 		}
 		public function setFields( $Fields = "" )
 		{
 			$this->_post = true;
 			$this->_binary = false;
-			$this->_binaryFields = $Fields;
+			$this->_binary_fields = $Fields;
 		}
 
 		public function setUserAgent( $userAgent )
@@ -181,7 +182,6 @@
 			}
 
 			//$this->s = curl_init();
-			//curl_setopt($this->s, CURLOPT_VERBOSE, true);
 			curl_setopt($this->s, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($this->s, CURLOPT_URL, $this->_url);
 			curl_setopt($this->s, CURLOPT_HTTPHEADER, $this->_httpheader);
@@ -189,11 +189,12 @@
 			curl_setopt($this->s, CURLOPT_MAXREDIRS, $this->_maxRedirects);
 			curl_setopt($this->s, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($this->s, CURLOPT_FOLLOWLOCATION, $this->_followlocation);
+			curl_setopt($this->s, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 			
 			if( $this->_cookie == true )
 			{
-				curl_setopt($this->s, CURLOPT_COOKIEJAR,$this->_cookieFileLocation);
-				curl_setopt($this->s, CURLOPT_COOKIEFILE,$this->_cookieFileLocation);
+				curl_setopt($this->s, CURLOPT_COOKIEJAR,$this->_cookie_file_path);
+				curl_setopt($this->s, CURLOPT_COOKIEFILE,$this->_cookie_file_path);
 			}
 
 			if($this->_proxy == true)
@@ -229,16 +230,18 @@
 			if( $this->_binary )
 			{
 				curl_setopt($this->s, CURLOPT_BINARYTRANSFER, true);
-				curl_setopt($this->s, CURLOPT_POSTFIELDS, $this->_binaryFields);
+				curl_setopt($this->s, CURLOPT_POSTFIELDS, $this->_binary_fields);
 			}
 			
 			if( $this->_custom_request != null )
 			{
 				curl_setopt($this->s, CURLOPT_CUSTOMREQUEST, $this->_custom_request);
+				curl_setopt($this->s, CURLOPT_POSTFIELDS, $this->_binary_fields);
 			}
 
 			if( $this->_includeHeader )
 			{
+				curl_setopt($this->s, CURLOPT_VERBOSE, true);
 				curl_setopt($this->s, CURLOPT_HEADER, true);
 			}
 
@@ -251,6 +254,8 @@
 			curl_setopt( $this->s, CURLOPT_REFERER, $this->_referer );
 			$this->_webpage = curl_exec( $this->s );
 			$this->_status = curl_getinfo( $this->s, CURLINFO_HTTP_CODE );
+			
+			/* reset */
 			//curl_close( $this->s );
 		}
 
@@ -264,11 +269,17 @@
 			$this->createCurl( $url );
 			return $this->_webpage;
 		}
-		public function send( $url, $post = array() )
+		public function send( $url, $post = null )
 		{
-			if( count($post)!=0 )
+			if( is_array($post) && count($post)!=0 )
+			{
 				$this->setPost( $post );
-
+			}
+			else if( is_string($post) )
+			{
+				$this->setFields( $post );
+				$this->setCustomRequest( "POST" );
+			}
 			$this->createCurl( $url );
 			return $this->_webpage;
 		}
@@ -277,7 +288,7 @@
 			if( $binary != "" )
 			{
 				$this->setBinary( $binary );
-				$this->setHttpHeader( array('Content-Length'=>strlen($this->_binaryFields)) );
+				$this->setHttpHeader( array('Content-Length'=>strlen($this->_binary_fields)) );
 				$this->setHttpHeader( array('Content-Type'=>'application/json;charset=UTF-8') );
 			}
 			$this->createCurl( $url );

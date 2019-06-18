@@ -1,28 +1,38 @@
 <?php
 	require_once("./src/autoload.php");
+	//require_once("./vendor/autoload.php");
 	
-	$company = new \Sunat\Sunat( true, true );
+	$cookie = array(
+		'cookie' 		=> array(
+			'use' 		=> true,
+			'file' 		=> __DIR__ . "/cookie.txt"
+		)
+	);
+	$config = array(
+		'representantes_legales' 	=> true,
+		'cantidad_trabajadores' 	=> true,
+		'establecimientos' 			=> true,
+		'cookie' 					=> $cookie
+	);
+	$sunat = new \Sunat\ruc( $config );
+	
 	$ruc = "20169004359";
 	$dni = "44274795";
 	
-	$search1 = $company->search( $ruc );
-	$search2 = $company->search( $dni );
-	
-	var_dump($search1);
-	var_dump($search2);
+	$search1 = $sunat->consulta( $ruc );
+	$search2 = $sunat->consulta( $dni );
 	
 	if( $search1->success == true )
 	{
-		echo "Empresa: " . $search1->result->RazonSocial;
+		echo "Empresa: " . $search1->result->razon_social;
 	}
 	
 	if( $search2->success == true )
 	{
-		echo "Persona: " . $search1->result->RazonSocial;
+		echo "Persona: " . $search1->result->razon_social;
 	}
 	
-	// Mostrar en formato XML/JSON
-	echo $search1->json();
-	echo $search1->xml('empresa');
-	
+	// Mostrar en formato JSON
+	echo $search1->json( );
+	echo $search2->json( NULL, true ); // pretty format
 ?>
