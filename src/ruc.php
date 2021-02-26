@@ -28,15 +28,26 @@ class ruc
 	{
 		//$this->curl = new \jossmp\navigate\Curl();
 		$this->curl = (new \jossmp\navigate\RequestCurl())->getCurl();
+		$this->curl->setConnectTimeout(5);
 
 		$this->_trabs            = (isset($config["cantidad_trabajadores"])) ? $config["cantidad_trabajadores"] : true;
 		$this->_establecimientos = (isset($config["establecimientos"])) ? $config["establecimientos"] : true;
 		$this->_legal            = (isset($config["representantes_legales"])) ? $config["representantes_legales"] : true;
 		$this->_deuda            = (isset($config["deuda"])) ? $config["deuda"] : true;
 
+		if (isset($config["proxy"])) {
+			$host = (isset($config["proxy"]["host"])) ? $config["proxy"]["host"] : NULL;
+			$port = (isset($config["proxy"]["port"])) ? $config["proxy"]["port"] : NULL;
+			$type = (isset($config["proxy"]["type"])) ? $config["proxy"]["type"] : NULL;
+			$user = (isset($config["proxy"]["user"])) ? $config["proxy"]["user"] : NULL;
+			$pass = (isset($config["proxy"]["pass"])) ? $config["proxy"]["user"] : NULL;
+			if ($host !== NULL && $port !== NULL && $type !== NULL) {
+				$this->set_proxy($host, $port, $type, $user, $pass);
+			}
+		}
+
 		$this->curl->setReferer(self::URL_CONSULT);
 		$this->curl->setHeader('Content-Type', 'application/x-www-form-urlencoded');
-		$this->curl->setReferer("https://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias");
 		$this->curl->setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36");
 	}
 
