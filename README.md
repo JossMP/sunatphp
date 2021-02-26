@@ -4,27 +4,36 @@ Clase php para consultar los datos de la web de [Sunat Perú] desde php.
 ### Metodo de Uso Consultas Sunat
 ```sh
 <?php
-	require_once("./src/autoload.php");
-	$cookie = array(
-		'cookie' 		=> array(
-			'use' 		=> true,
-			'file' 		=> __DIR__ . "/cookie.txt"
-		)
-	);
-	$config = array(
+	require_once("vendor/autoload.php");
+
+	$config = [
 		'representantes_legales' 	=> true,
 		'cantidad_trabajadores' 	=> true,
 		'establecimientos' 			=> true,
-		'cookie' 					=> $cookie
-	);
-	
-	$sunat = new \Sunat\ruc( $config );
-	
+		'deuda' 					=> true,
+	];
+
+	$sunat = new \jossmp\sunat\ruc($config);
+
 	$ruc = "20169004359";
 	$dni = "44274795";
-	
-	$search1 = $sunat->consulta( $ruc );
-	$search2 = $sunat->consulta( $dni );
+
+	$search1 = $sunat->consulta($ruc);
+	$search2 = $sunat->consulta($dni);
+
+	if ($search1->success == true) {
+		echo "\n";
+		echo "Empresa: " . $search1->result->razon_social . "\n";
+		echo $search1->json(NULL, true);
+		echo "\n\n";
+	}
+
+	if ($search2->success == true) {
+		echo "\n";
+		echo "Persona: " . $search1->result->razon_social . "\n";
+		echo $search2->json(NULL, true);
+		echo "\n\n";
+	}
 ?>
 ```
 ### Error en busquedas / sin resultados
@@ -42,47 +51,62 @@ en caso de no haber encontrado resultados $search->success es false
 ```sh
 <?php
 	...
-	$search->result->ruc
-    $search->result->razon_social
-    $search->result->condicion
-    $search->result->nombre_comercial
-    $search->result->tipo
-    $search->result->fecha_inscripcion
-    $search->result->estado
-    $search->result->direccion 					// Solo Empresas
-    $search->result->sistema_emision
-    $search->result->actividad_exterior
-    $search->result->sistema_contabilidad
-    $search->result->oficio						// Solo Personas
-    $search->result->emision_electronica
-    $search->result->comprobante_electronico 	// array
-    $search->result->ple
-    $search->result->inicio_actividades
-    $search->result->actividad_economica 		// array
-    $search->result->establecimientos 			// array
-    $search->result->representantes_legales 	// array
-    $search->result->cantidad_trabajadores 		// array
-
+	$search->result->ruc;
+	$search->result->razon_social;
+	$search->result->direccion;
+	$search->result->departamento;
+	$search->result->provincia;
+	$search->result->distrito;
+	$search->result->estado;
+	$search->result->condicion;
+	$search->result->tipo;
+	$search->result->nombre_comercial;
+	$search->result->fecha_inscripcion;
+	$search->result->sistema_emision;
+	$search->result->actividad_exterior;
+	$search->result->sistema_contabilidad;
+	$search->result->comprobante_impreso; // List(Array)
+	$search->result->comprobante_electronico;
+	$search->result->ple;
+	$search->result->inicio_actividades;
+	$search->result->actividad_economica; // List(Array)
+	$search->result->oficio;
+	$search->result->ubigeo;
+	$search->result->dir_tipo_via;
+	$search->result->dir_cod_zona;
+	$search->result->dir_tipo_zona;
+	$search->result->dir_num;
+	$search->result->dir_interior;
+	$search->result->dir_lote;
+	$search->result->dir_dpto;
+	$search->result->dir_manzana;
+	$search->result->dir_km;
+	$search->result->dir_nomb_via;
+	$search->result->emision_electronica; // date
+	$search->result->telefono;
+	$search->result->establecimientos; // List
+	$search->result->cantidad_trabajadores; // List
+	$search->result->representantes_legales; // List
+	$search->result->deuda_coactiva; // List
+	$search->result->fecha_registro;
+	$search->result->fecha_actualizacion;
+	$search->result->completo;
+	$search->result->contribuyente;
+	$search->result->contribuyente_tipo_doc;
+	$search->result->contribuyente_num_doc;
 ?>
 ```
 
 ### Metodo de Uso Consulta Tipo cambio ( USD => PEN )
 
 ```sh
-	require_once("./src/autoload.php");
-	$cookie = array(
-		'cookie' 		=> array(
-			'use' 		=> true,
-			'file' 		=> __DIR__ . "/cookie.txt"
-		)
-	);
-	$config = array(
-		'cookie' 					=> $cookie
-	);
-	
-	$test = new \Sunat\tipo_cambio( $config );
+<?php
+	require_once("vendor/autoload.php");
+	$tc = new \jossmp\sunat\tipo_cambio();
 
-	$search = $test->consulta('02','2019');
+	$search = $tc->ultimo_tc();
+
+	// $search = $tc->consulta('02','2019'); // No disponible
 ```
 
 ### Mostrar Resultados en JSON / XML
@@ -118,7 +142,9 @@ en caso de no haber encontrado resultados $search->success es false
 ### Pre-requisitos
 ```sh
 - cURL
-- PHP 5.2.0 o superior
+- PHP 5.4.0 o superior
+- jossmp/navigate
+- jossmp/response
 ```
 
 
@@ -129,6 +155,6 @@ Donaciones: [PayPal]
 Copyright (C), 2018 Josue Mazco GNU General Public License 3 (http://www.gnu.org/licenses/)
 
 [Ver repositorio]: <https://github.com/JossMP/datos-peru/>
-[Ver demo]: <https://demo.peruanosenlinea.com/>
+[Ver demo]: <https://git.tryout.top/sunat/>
 [PayPal]: <https://www.paypal.me/JossMP>
 [Sunat Perú]: <http://www.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias>
