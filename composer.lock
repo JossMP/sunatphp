@@ -1,0 +1,114 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "22b09e918253421c92c85643a65a429f",
+    "packages": [
+        {
+            "name": "jossmp/navigate",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://gitlab.com/JossMP/navigate.git",
+                "reference": "8b638fb0e25050efbc6ae7b0b7bbde67e793ad48"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://gitlab.com/api/v4/projects/JossMP%2Fnavigate/repository/archive.zip?sha=8b638fb0e25050efbc6ae7b0b7bbde67e793ad48",
+                "reference": "8b638fb0e25050efbc6ae7b0b7bbde67e793ad48",
+                "shasum": ""
+            },
+            "require-dev": {
+                "php": ">=5.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "jossmp\\navigate\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Josue Mazco Puma",
+                    "email": "jossmp@gmail.com",
+                    "homepage": "https://gitlab.com/JossMP",
+                    "role": "Developers"
+                }
+            ],
+            "description": "Libreria para el uso de cURL",
+            "homepage": "https://gitlab.com/JossMP/",
+            "keywords": [
+                "curl",
+                "navigate",
+                "scraping"
+            ],
+            "time": "2020-09-07T05:42:38+00:00"
+        },
+        {
+            "name": "jossmp/response",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://gitlab.com/JossMP/response.git",
+                "reference": "680c3da3a771b963131124c802df15d28087f15a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://gitlab.com/api/v4/projects/JossMP%2Fresponse/repository/archive.zip?sha=680c3da3a771b963131124c802df15d28087f15a",
+                "reference": "680c3da3a771b963131124c802df15d28087f15a",
+                "shasum": ""
+            },
+            "require-dev": {
+                "php": ">=5.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "jossmp\\response\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Josue Mazco Puma",
+                    "email": "jossmp@gmail.com",
+                    "homepage": "https://gitlab.com/JossMP",
+                    "role": "Developers"
+                }
+            ],
+            "description": "Convierte array en Objeto",
+            "homepage": "https://gitlab.com/JossMP/",
+            "keywords": [
+                "Array2Object",
+                "array",
+                "object"
+            ],
+            "time": "2020-08-28T15:59:28+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "jossmp/navigate": 20,
+        "jossmp/response": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": {
+        "php": ">=5.4",
+        "ext-curl": "*",
+        "lib-curl": "*"
+    },
+    "plugin-api-version": "1.1.0"
+}

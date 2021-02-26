@@ -2,8 +2,14 @@
     "name": "jossmp/sunatphp",
     "description": "Clase para realizar consultas a sunat Peru mediante el numero de ruc o dni",
     "type": "library",
-    "keywords": ["Sunat", "Peru", "PHP", "Consulta", "cURL"],
-    "homepage" : "https://github.com/JossMP/sunatphp",
+    "keywords": [
+        "Sunat",
+        "Peru",
+        "PHP",
+        "Consulta",
+        "cURL"
+    ],
+    "homepage": "https://github.com/JossMP/sunatphp",
     "license": "MIT",
     "minimum-stability": "dev",
     "optimize-autoloader": true,
@@ -11,22 +17,23 @@
         {
             "name": "Josue Mazco Puma",
             "email": "jossmp@gmail.com",
-            "homepage" : "https://peruanosenlinea.com/",
-            "role" : "Developers"
+            "homepage": "https://peruanosenlinea.com/",
+            "role": "Developers"
         }
     ],
-    "require": {
+    "require-dev": {
+        "php": ">=5.4",
         "ext-curl": "*",
         "lib-curl": "*"
     },
-    "require-dev": {
-        "php": ">=5.2"
+    "require": {
+        "jossmp/navigate": "dev-master",
+        "jossmp/response": "dev-master"
     },
-    "autoload":{
-		"psr-4":{
-			"Sunat\\":"src/",
-			"CURL\\":"src/",
-			"response\\":"src/"
-		}
-	}
+    "autoload": {
+        "psr-4": {
+            "jossmp\\sunat\\": "src",
+            "jossmp\\sunat\\model\\": "src/model/"
+        }
+    }
 }
