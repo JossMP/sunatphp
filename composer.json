@@ -27,8 +27,8 @@
         "lib-curl": "*"
     },
     "require": {
-        "jossmp/navigate": "dev-master",
-        "jossmp/response": "dev-master"
+        "jossmp/response": "^1.0.2",
+        "jossmp/navigate": "^1.0.2"
     },
     "autoload": {
         "psr-4": {

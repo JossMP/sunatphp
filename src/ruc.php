@@ -4,9 +4,11 @@ namespace jossmp\sunat;
 
 class ruc
 {
-	const URL_NUM_RAND = "https://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/captcha?accion=random";
-	const URL_CAPTCHA  = "https://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/captcha?accion=image";
-	const URL_CONSULT  = "https://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias";
+	const URL_CONSULT_MORE  = "https://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsruc/jcrS00Alias";
+	const URL_CONSULT  = "https://e-consultaruc.sunat.gob.pe/cl-ti-itmrconsmulruc/jrmS00Alias";
+	const URL_FILE_ZIP = "https://www.sunat.gob.pe/cl-at-framework-unloadfile/descargaArchivoAlias";
+
+	const UNZIP_FORMAT = 'Vsig/vver/vflag/vmeth/vmodt/vmodd/Vcrc/Vcsize/Vsize/vnamelen/vexlen';
 
 	var $curl = NULL;
 
@@ -28,23 +30,11 @@ class ruc
 	{
 		//$this->curl = new \jossmp\navigate\Curl();
 		$this->curl = (new \jossmp\navigate\RequestCurl())->getCurl();
-		$this->curl->setConnectTimeout(5);
 
 		$this->_trabs            = (isset($config["cantidad_trabajadores"])) ? $config["cantidad_trabajadores"] : true;
 		$this->_establecimientos = (isset($config["establecimientos"])) ? $config["establecimientos"] : true;
 		$this->_legal            = (isset($config["representantes_legales"])) ? $config["representantes_legales"] : true;
 		$this->_deuda            = (isset($config["deuda"])) ? $config["deuda"] : true;
-
-		if (isset($config["proxy"])) {
-			$host = (isset($config["proxy"]["host"])) ? $config["proxy"]["host"] : NULL;
-			$port = (isset($config["proxy"]["port"])) ? $config["proxy"]["port"] : NULL;
-			$type = (isset($config["proxy"]["type"])) ? $config["proxy"]["type"] : NULL;
-			$user = (isset($config["proxy"]["user"])) ? $config["proxy"]["user"] : NULL;
-			$pass = (isset($config["proxy"]["pass"])) ? $config["proxy"]["user"] : NULL;
-			if ($host !== NULL && $port !== NULL && $type !== NULL) {
-				$this->set_proxy($host, $port, $type, $user, $pass);
-			}
-		}
 
 		$this->curl->setReferer(self::URL_CONSULT);
 		$this->curl->setHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -116,57 +106,91 @@ class ruc
 		$this->refresh = ($flag === TRUE) ? TRUE : FALSE;
 	}
 
+	function require_deuda($flag = false)
+	{
+		$this->_deuda = $flag;
+	}
+	function require_legal($flag = false)
+	{
+		$this->_legal  = $flag;
+	}
+	function require_trabs($flag = false)
+	{
+		$this->_trabs  = $flag;
+	}
+	function require_establecimientos($flag = false)
+	{
+		$this->_establecimientos  = $flag;
+	}
 	/* ---------------------------------------------------- */
 	/* ----------------- Inicio de codigo ----------------- */
 	/* ---------------------------------------------------- */
-	public function get_num_rand()
+
+	/**
+	 * decompressXmlFile
+	 *
+	 * @param mixed $zipContent
+	 * @return string
+	 */
+	public function decompressXmlFile($zipContent)
 	{
-		$numRand = $this->curl->get(self::URL_NUM_RAND);
-		if ($this->curl->getHttpStatusCode() == 200 && $numRand != "")
-			return $numRand;
-		return false;
+		$head = unpack(self::UNZIP_FORMAT, substr($zipContent, 0, 30));
+
+		return (gzinflate(substr($zipContent, 30 + $head['namelen'] + $head['exlen'])));
 	}
 
-	public function consulta_for_num_rand($ruc)
+	public function get_link($ruc)
 	{
-		$numRand = $this->get_num_rand();
-		if ($numRand !== false) {
-			$data = array(
-				'modo'      => '1',
-				'rbtnTipo'  => '1',
-				'contexto'  => 'ti-it',
-				'tQuery'    => 'on',
-				'accion'    => 'consPorRuc',
-				'actReturn' => '1',
-				'nroRuc'    => $ruc,
-				'numRnd'    => $numRand
-			);
+		$url = self::URL_CONSULT . "?accion=consManual&txtRuc&selRuc=" . $ruc;
 
-			$response = $this->curl->post(self::URL_CONSULT, $data);
-			if ($this->curl->getHttpStatusCode() == 200 && $response != "") {
-				if (mb_detect_encoding($response, "UTF-8, ISO-8859-1") != "UTF-8") {
-					//return  iconv("ISO-8859-1", "utf-8", $response);
-					return new \jossmp\response\obj([
-						'success' => true,
-						'result'  => utf8_encode($response),
-					]);
-				}
-				return new \jossmp\response\obj([
+		$response = $this->curl->get($url);
+		if ($response != "" && $this->curl->getHttpStatusCode() == 200) {
+			$patron = '/data0_num_id=([\d]+)"/';
+			$output = preg_match_all($patron, $response, $matches, PREG_SET_ORDER);
+			if (isset($matches[0])) {
+				$link_zip = 'https://www.sunat.gob.pe/cl-at-framework-unloadfile/descargaArchivoAlias?data0_num_id=' . $matches[0][1];
+				return new \jossmp\response\obj(array(
 					'success' => true,
-					'result'  => $response,
-				]);
+					'result' => array('zip' => $link_zip),
+				));
 			}
-			return new \jossmp\response\obj([
+			return new \jossmp\response\obj(array(
 				'success' => false,
-				'type'    => 'connect',
-				'message' => 'No se ha podido obtener el captcha',
-			]);
+				'message' => 'No se encontraron resultados',
+			));
 		}
-		return new \jossmp\response\obj([
+		return new \jossmp\response\obj(array(
 			'success' => false,
-			'type'    => 'captcha',
-			'message' => 'No se ha podido obtener el captcha',
-		]);
+			'message' => 'Error de coneccion a SUNAT',
+		));
+	}
+
+	public function get_data($ruc)
+	{
+		$response = $this->get_link($ruc);
+		if ($response->success == true) {
+			$url = trim($response->result->zip);
+
+			$zipContent = $this->curl->get($url);
+
+			$headers = $this->curl->getResponseHeaders();
+			$content_type    = trim($headers['content-type']);
+			if ($zipContent != "" && $this->curl->getHttpStatusCode() == 200 && $content_type == 'application/zip') {
+				$csv = $this->decompressXmlFile($zipContent);
+
+				$this->company = new \jossmp\sunat\model\company();
+				$this->company->set_ruc($ruc);
+
+				$response = $this->process($csv);
+
+				return $response;
+			}
+			return new \jossmp\response\obj(array(
+				'success' => false,
+				'message' => 'SUNAT no responde',
+			));
+		}
+		return $response;
 	}
 
 	public function consulta($ruc)
@@ -198,6 +222,12 @@ class ruc
 
 		$response = $this->get_consulta($ruc);
 		if ($response->success == true) {
+			if ($local->success == true) {
+				$local->result->load_data($response->result);
+				$this->save_local_json($ruc, $local->json());
+				return $local;
+			}
+			$this->save_local_json($ruc, $response->json());
 			return $response;
 		} else if ($local->success == true) {
 			return $local;
@@ -207,291 +237,113 @@ class ruc
 
 	public function get_consulta($ruc)
 	{
-		$response = $this->consulta_for_num_rand($ruc);
+		$response = $this->get_data($ruc);
 		if ($response->success == true) {
-			$this->company = new \jossmp\sunat\model\company();
-			$this->company->set_ruc($ruc);
-			$process = $this->process($response->result);
-			if ($process->success == true) {
-				if ($this->company->get_razon_social() != NULL) {
-
-					$this->company->set_cantidad_trabajadores(array());
-					if ($this->_trabs) {
-						$trabs = $this->get_num_trabajadores($ruc);
-						if ($trabs->success == true) {
-							$this->company->set_cantidad_trabajadores($trabs->result);
-						}
-					}
-
-					$this->company->set_establecimientos(array());
-					if ($this->_establecimientos) {
-						$establecimientos = $this->get_establecimiento($ruc);
-						if ($establecimientos->success == true) {
-							$this->company->set_establecimientos($establecimientos->result);
-						}
-					}
-
-					$this->company->set_representantes_legales(array());
-					if ($this->_legal) {
-						$legal = $this->get_representante_legal($ruc);
-						if ($legal->success == true) {
-							$this->company->set_representantes_legales($legal->result);
-						}
-					}
-
-					$this->company->set_deuda_coactiva(array());
-					if ($this->_deuda) {
-						$deuda = $this->get_deuda_coactiva($ruc);
-						if ($deuda->success == true) {
-							$this->company->set_deuda_coactiva($deuda->result);
-						}
-					}
-
-					$response = new \jossmp\response\obj(array(
-						'success' 	=> 	true,
-						'result' 	=> 	$this->company
-					));
-
-					$this->save_local_json($ruc, $response->json());
-					return $response;
+			$this->company->set_representantes_legales(array());
+			if ($this->_legal) {
+				$legal = $this->get_representante_legal($ruc);
+				if ($legal->success == true) {
+					$this->company->set_representantes_legales($legal->result);
 				}
-			} else {
-				return $process;
 			}
-		}
 
-		return new \jossmp\response\obj([
-			'success' => false,
-			'type'    => 'connect',
-			'message' => 'Sunat no responde.',
-		]);
+			$this->company->set_deuda_coactiva(array());
+			if ($this->_deuda) {
+				$deuda = $this->get_deuda_coactiva($ruc);
+				if ($deuda->success == true) {
+					$this->company->set_deuda_coactiva($deuda->result);
+				}
+			}
+
+			$this->company->set_cantidad_trabajadores(array());
+			if ($this->_trabs) {
+				$trabs = $this->get_num_trabajadores($ruc);
+				if ($trabs->success == true) {
+					$this->company->set_cantidad_trabajadores($trabs->result);
+				}
+			}
+
+			$this->company->set_establecimientos(array());
+			if ($this->_establecimientos) {
+				$establecimientos = $this->get_establecimiento($ruc);
+				if ($establecimientos->success == true) {
+					$this->company->set_establecimientos($establecimientos->result);
+				}
+			}
+
+			return new \jossmp\response\obj([
+				'success' => true,
+				'result' => $this->company,
+			]);
+		}
+		return $response;
 	}
 
 	private function process($response)
 	{
-		libxml_use_internal_errors(true);
+		$line = explode("\n", $response);
+		if (isset($line[1]) && trim($line[1]) != '') {
 
-		$doc = new \DOMDocument('1.0', 'UTF-8');
-		$doc->strictErrorChecking = false;
+			$data = explode("|", $line[1]);
+			if (count($data) >= 25) {
+				$this->company->set_ruc(trim($data[0], "- \t\n\r\0\x0B"));
+				$this->company->set_razon_social(trim($data[1], "- \t\n\r\0\x0B"));
+				$this->company->set_tipo(trim($data[2], "- \t\n\r\0\x0B"));
+				$this->company->set_oficio(trim($data[3], "- \t\n\r\0\x0B"));
+				$this->company->set_nombre_comercial(trim($data[4], "- \t\n\r\0\x0B"));
+				$this->company->set_condicion(trim($data[5], "- \t\n\r\0\x0B"));
+				$this->company->set_estado(trim($data[6], "- \t\n\r\0\x0B"));
+				$this->company->set_fecha_inscripcion(trim($data[7], "- \t\n\r\0\x0B"));
+				$this->company->set_inicio_actividades(trim($data[8], "- \t\n\r\0\x0B"));
+				$this->company->set_departamento(trim($data[9], "- \t\n\r\0\x0B"));
+				$this->company->set_provincia(trim($data[10], "- \t\n\r\0\x0B"));
+				$this->company->set_distrito(trim($data[11], "- \t\n\r\0\x0B"));
 
-		@$doc->loadHTML($response);
+				$this->company->set_direccion(trim($data[12], "- \t\n\r\0\x0B"));
+				$this->company->set_telefono(trim($data[13], "- \t\n\r\0\x0B"));
+				$this->company->set_fax(trim($data[14], "- \t\n\r\0\x0B"));
+				$this->company->set_actividad_exterior(trim($data[15], "- \t\n\r\0\x0B"));
+				// Actividad economica
+				$ae = [];
 
-		libxml_use_internal_errors(false);
+				$ae[] = [
+					"tipo" => 'Principal',
+					"cod"  => '',
+					"desc" => trim($data[16], "- \t\n\r\0\x0B")
+				];
 
-		$xml = simplexml_import_dom($doc);
-		$data = $xml->xpath("//div[@class='list-group']/div/div[@class='row']");
-		if (count($data) <= 0) {
-			return new \jossmp\response\obj([
-				'success' => false,
-				'type'    => 'empty',
-				'message' => 'no se encontraron datos',
-			]);
-		}
-
-		$fail = 0;
-
-		foreach ($data as $obj) {
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Número de RUC:') {
-				if (isset($obj->div[1]->h4) && !empty(trim($obj->div[1]->h4))) {
-					$list = explode('-', trim($obj->div[1]->h4));
-					if (count($list) >= 2) {
-						$this->company->set_ruc(trim($list[0]));
-						$this->company->set_razon_social(trim($list[1]));
-					} else {
-						$fail++;
-					}
-				} else {
-					$fail++;
+				if (trim($data[17], "- \t\n\r\0\x0B") != '' && trim($data[17], "- \t\n\r\0\x0B") != '-') {
+					$ae[] = [
+						"tipo" => 'Secundario',
+						"cod"  => '',
+						"desc" => trim($data[17], "- \t\n\r\0\x0B")
+					];
 				}
-			}
+				if (trim($data[18], "- \t\n\r\0\x0B") != '' && trim($data[18], "- \t\n\r\0\x0B") != '-') {
+					$ae[] = [
+						"tipo" => 'Secundario',
+						"cod"  => '',
+						"desc" => trim($data[18], "- \t\n\r\0\x0B")
+					];
+				}
+				$this->company->set_actividad_economica($ae);
 
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Tipo Contribuyente:') {
-				if (isset($obj->div[1]->p) && !empty(trim($obj->div[1]->p))) {
-					$this->company->set_tipo(trim($obj->div[1]->p));
-				} else {
-					$fail++;
-				}
-			}
+				$this->company->set_afectado_rus(trim($data[19], "- \t\n\r\0\x0B"));
+				$this->company->set_buen_contribuyente(trim($data[20], "- \t\n\r\0\x0B"));
+				$this->company->set_agente_retencion(trim($data[21], "- \t\n\r\0\x0B"));
+				$this->company->set_agente_perc_vta_int(trim($data[22], "- \t\n\r\0\x0B"));
+				$this->company->set_agente_perc_com_liq(trim($data[23], "- \t\n\r\0\x0B"));
 
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Tipo de Documento:') {
-				if (isset($obj->div[1]->p) && !empty(trim($obj->div[1]->p))) {
-					$list = explode('-', trim($obj->div[1]->p));
-					if ($list >= 2) {
-						$this->company->set_contribuyente(trim($list[1]));
-						$list2 = explode(' ', trim($list[0]));
-						if ($list2 >= 2) {
-							$this->company->set_contribuyente_tipo_doc(trim($list2[0]));
-							$this->company->set_contribuyente_num_doc(trim($list2[1]));
-						}
-					} else {
-						$fail++;
-					}
-				} else {
-					$fail++;
-				}
-			}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Nombre Comercial:') {
-				if (isset($obj->div[1]->p) && !empty(trim($obj->div[1]->p))) {
-					$this->company->set_nombre_comercial(trim($obj->div[1]->p));
-				} else {
-					$fail++;
-				}
-			}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Fecha de Inscripción:') {
-				if (!empty(trim($obj->div[1]->p))) {
-					$this->company->set_fecha_inscripcion(trim($obj->div[1]->p));
-				} else {
-					$fail++;
-				}
-				if (isset($obj->div[2]->h4) && trim($obj->div[2]->h4) == 'Fecha de Inicio de Actividades:') {
-					if (!empty(trim($obj->div[3]->p))) {
-						$this->company->set_inicio_actividades(trim($obj->div[3]->p));
-					} else {
-						$fail++;
-					}
-				}
-			}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Estado del Contribuyente:') {
-				if (!empty(trim($obj->div[1]->p))) {
-					$this->company->set_estado(trim($obj->div[1]->p));
-				} else {
-					$fail++;
-				}
-			}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Condición del Contribuyente:') {
-				if (!empty(trim($obj->div[1]->p))) {
-					$this->company->set_condicion(trim($obj->div[1]->p));
-				} else {
-					$fail++;
-				}
-			}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Domicilio Fiscal:') {
-				if (!empty(trim($obj->div[1]->p))) {
-					$val = $this->fix_direccion(trim($obj->div[1]->p));
-					$this->company->set_direccion($val['direccion']);
-					$this->company->set_departamento($val['departamento']);
-					$this->company->set_provincia($val['provincia']);
-					$this->company->set_distrito($val['distrito']);
-				} else {
-					$fail++;
-				}
-			}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Sistema Emisión de Comprobante:') {
-				if (!empty(trim($obj->div[1]->p))) {
-					$this->company->set_sistema_emision(trim($obj->div[1]->p));
-				} else {
-					$fail++;
-				}
-				if (isset($obj->div[2]->h4) && trim($obj->div[2]->h4) == 'Actividad Comercio Exterior:') {
-					if (!empty(trim($obj->div[3]->p))) {
-						$this->company->set_actividad_exterior(trim($obj->div[3]->p));
-					} else {
-						$fail++;
-					}
-				}
-			}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Sistema Contabilidiad:') {
-				if (!empty(trim($obj->div[1]->p))) {
-					$this->company->set_sistema_contabilidad(trim($obj->div[1]->p));
-				} else {
-					$fail++;
-				}
-			}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Actividad(es) Económica(s):') {
-				if (!empty($obj->div[1]->table->tbody->tr)) {
-					$ae = [];
-					foreach ($obj->div[1]->table->tbody->tr as $tr) {
-						$td_ae = explode('-', trim($tr->td));
-						if (count($td_ae) >= 3) {
-							$ae[] = [
-								'tipo' => trim($td_ae[0]),
-								'cod'  => trim($td_ae[1]),
-								'desc' => trim($td_ae[2]),
-							];
-						}
-					}
-					$this->company->set_actividad_economica($ae);
-				} else {
-					$fail++;
-				}
-			}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Comprobantes de Pago c/aut. de impresión (F. 806 u 816):') {
-				if (!empty($obj->div[1]->table->tbody->tr)) {
-					$cp = [];
-					foreach ($obj->div[1]->table->tbody->tr as $tr) {
-						$cp[] = trim($tr->td);
-					}
-					$this->company->set_comprobante_impreso($cp);
-				} else {
-					$fail++;
-				}
-			}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Sistema de Emisión Electrónica:') {
-				if (!empty($obj->div[1]->table->tbody->tr)) {
-					$cp = [];
-					foreach ($obj->div[1]->table->tbody->tr as $tr) {
-						$ce = trim($tr->td);
-						$list = explode('DESDE', $ce);
-						if (count($list) >= 2) {
-							$desde    = \DateTime::createFromFormat("d/m/Y", trim(end($list)));
-							unset($list[count($list) - 1]);
-							$comprobante = implode("DESDE", $list);
-							$cp[] = [
-								'comprobante' => trim($comprobante),
-								'inicio'      => $desde->format("Y-m-d"),
-							];
-						} else {
-							$cp[] = [
-								'comprobante' => $ce,
-								'inicio'      => '-',
-							];
-						}
-					}
-					$this->company->set_comprobante_electronico($cp);
-				} else {
-					$fail++;
-				}
-			}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Emisor electrónico desde:') {
-				if (!empty(trim($obj->div[1]->p))) {
-					$this->company->set_emision_electronica(trim($obj->div[1]->p));
-				} else {
-					$fail++;
-				}
-			}
-
-			//if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Comprobantes Electrónicos:') {
-			//	if (!empty(trim($obj->div[1]->p))) {
-			//		$this->company->set_comprobante_electronico(trim($obj->div[1]->p));
-			//	} else {
-			//      $fail++;
-			//	}
-			//}
-
-			if (isset($obj->div[0]->h4) && trim($obj->div[0]->h4) == 'Afiliado al PLE desde:') {
-				if (!empty(trim($obj->div[1]->p))) {
-					$this->company->set_ple(trim($obj->div[1]->p));
-				} else {
-					$fail++;
-				}
+				return new \jossmp\response\obj([
+					'success' => true,
+					'type'    => 'count'
+				]);
 			}
 		}
-		return new \jossmp\response\obj([
-			'success' => true,
-			'type'    => 'count',
-			'message' => $fail . ' datos no encontrados',
-		]);
+		return new \jossmp\response\obj(array(
+			'success' => false,
+			'message' => 'Imposible procesar la respuesta',
+		));
 	}
 
 	/*** *** *** *** *** *** *** *** ***/
@@ -505,11 +357,12 @@ class ruc
 				"accion"   => "getCantTrab",
 				"contexto" => "ti-it",
 				"modo"     => "1",
-				"nroRuc"   => $valid->result->ruc,
-				"desRuc"   => "",
+				"nroRuc"   => trim($valid->result->ruc),
+				"desRuc" => 'FOREST+%26+GROUP+CONTRACTORS+S.A.C.',
+				//"desRuc"   => "",
 			);
 
-			$rtn = $this->curl->post(self::URL_CONSULT, $data);
+			$rtn = $this->curl->post(self::URL_CONSULT_MORE, $data);
 
 			if ($rtn != "" && $this->curl->getHttpStatusCode() == 200) {
 
@@ -575,9 +428,8 @@ class ruc
 				"modo"          => "1",
 				'nroRuc'        => $valid->result->ruc,
 				"desRuc"        => "",
-				'tamanioPagina' => 500,
 			);
-			$rtn = $this->curl->post(self::URL_CONSULT, $data);
+			$rtn = $this->curl->post(self::URL_CONSULT_MORE, $data);
 			if ($rtn != "" && $this->curl->getHttpStatusCode() == 200) {
 
 				libxml_use_internal_errors(true);
@@ -651,7 +503,7 @@ class ruc
 				"desRuc"   => "",
 				"nroRuc"   => $valid->result->ruc,
 			);
-			$rtn = $this->curl->post(self::URL_CONSULT, $data);
+			$rtn = $this->curl->post(self::URL_CONSULT_MORE, $data);
 			if ($rtn != "" && $this->curl->getHttpStatusCode() == 200) {
 
 				libxml_use_internal_errors(true);
@@ -717,7 +569,7 @@ class ruc
 				"submit"   => "Deuda Coactiva",
 			);
 
-			$response = $this->curl->post(self::URL_CONSULT, $data);
+			$response = $this->curl->post(self::URL_CONSULT_MORE, $data);
 			if ($response != "" && $this->curl->getHttpStatusCode() == 200) {
 
 				libxml_use_internal_errors(true);

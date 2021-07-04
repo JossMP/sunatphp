@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "22b09e918253421c92c85643a65a429f",
+    "content-hash": "84ca83273766716f52bdf549406c069d",
     "packages": [
         {
             "name": "jossmp/navigate",
-            "version": "dev-master",
+            "version": "v1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://gitlab.com/JossMP/navigate.git",
-                "reference": "8b638fb0e25050efbc6ae7b0b7bbde67e793ad48"
+                "reference": "b1a0d9b2c3df8264fc0047f8728b805ff2802053"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://gitlab.com/api/v4/projects/JossMP%2Fnavigate/repository/archive.zip?sha=8b638fb0e25050efbc6ae7b0b7bbde67e793ad48",
-                "reference": "8b638fb0e25050efbc6ae7b0b7bbde67e793ad48",
+                "url": "https://gitlab.com/api/v4/projects/JossMP%2Fnavigate/repository/archive.zip?sha=b1a0d9b2c3df8264fc0047f8728b805ff2802053",
+                "reference": "b1a0d9b2c3df8264fc0047f8728b805ff2802053",
                 "shasum": ""
             },
             "require-dev": {
@@ -48,20 +48,23 @@
                 "navigate",
                 "scraping"
             ],
-            "time": "2020-09-07T05:42:38+00:00"
+            "support": {
+                "issues": "https://gitlab.com/api/v4/projects/15827425/issues"
+            },
+            "time": "2021-04-25T20:17:41+00:00"
         },
         {
             "name": "jossmp/response",
-            "version": "dev-master",
+            "version": "v1.0.6",
             "source": {
                 "type": "git",
                 "url": "https://gitlab.com/JossMP/response.git",
-                "reference": "680c3da3a771b963131124c802df15d28087f15a"
+                "reference": "729920fdc3f6109627e2270379cf98c5e3202f46"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://gitlab.com/api/v4/projects/JossMP%2Fresponse/repository/archive.zip?sha=680c3da3a771b963131124c802df15d28087f15a",
-                "reference": "680c3da3a771b963131124c802df15d28087f15a",
+                "url": "https://gitlab.com/api/v4/projects/JossMP%2Fresponse/repository/archive.zip?sha=729920fdc3f6109627e2270379cf98c5e3202f46",
+                "reference": "729920fdc3f6109627e2270379cf98c5e3202f46",
                 "shasum": ""
             },
             "require-dev": {
@@ -92,16 +95,16 @@
                 "array",
                 "object"
             ],
-            "time": "2020-08-28T15:59:28+00:00"
+            "support": {
+                "issues": "https://gitlab.com/api/v4/projects/15987639/issues"
+            },
+            "time": "2021-06-23T07:38:00+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "jossmp/navigate": 20,
-        "jossmp/response": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
@@ -110,5 +113,5 @@
         "ext-curl": "*",
         "lib-curl": "*"
     },
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.0.0"
 }
